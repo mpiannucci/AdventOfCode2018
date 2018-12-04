@@ -8,7 +8,7 @@ fn main() {
     let mut found_freqs: HashSet<i64> = HashSet::new();
 
     let mut raw_frequencies = String::new();
-    File::open("data/input.txt")
+    File::open("./../input.txt")
         .expect("Unable to read from input.txt")
         .read_to_string(&mut raw_frequencies)
         .expect("Unable to feed contents to string");
