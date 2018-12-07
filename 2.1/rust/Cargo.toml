@@ -1,0 +1,7 @@
+[package]
+name = "aoc2-1"
+version = "0.1.0"
+authors = ["Matthew Iannucci <miannucci@navatekltd.com>"]
+edition = "2018"
+
+[dependencies]
