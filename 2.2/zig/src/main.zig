@@ -12,9 +12,9 @@ pub fn main() anyerror!void {
     var commonBoxIdBuffer = Buffer.initNull(allocator);
     defer commonBoxIdBuffer.deinit();
 
-    var boxIdIter = std.mem.split(rawBoxIds, "\n");
+    var boxIdIter = mem.split(rawBoxIds, "\n");
     outer: while (boxIdIter.next()) |boxId| {
-        var otherBoxIdIter = std.mem.split(rawBoxIds, "\n");
+        var otherBoxIdIter = mem.split(rawBoxIds, "\n");
         while (otherBoxIdIter.next()) |otherBoxId| {
             try commonBoxIdBuffer.resize(0);
             var diffCount: u8 = 0;
