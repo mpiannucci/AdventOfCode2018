@@ -10,32 +10,42 @@ pub fn main() anyerror!void {
     const inputFilePath = try os.path.join(allocator, "..", "input.txt");
     const rawClaims = try io.readFileAlloc(allocator, inputFilePath);
 
-    var claimMap = [][1000]u8{[]u8{0} ** 1000} ** 1000;
+    var direct_allocator = std.heap.DirectAllocator.init();
+    defer direct_allocator.deinit();
+    var rectList = std.ArrayList(Rectangle).init(&direct_allocator.allocator);
+    defer rectList.deinit();
 
     var lines = mem.split(rawClaims, "\n");
     while (lines.next()) |line| {
         var rawClaim = mem.dupe(allocator, u8, line) catch unreachable;
         defer allocator.free(rawClaim);
 
-        var rect = Rectangle.initFromString(rawClaim);
+        var rectangle = Rectangle.initFromString(rawClaim);
+        try rectList.append(rectangle);
+    }
 
-        for (claimMap[rect.left..rect.left+rect.width]) |*outerSlice| {
-            for (outerSlice[rect.top..rect.top+rect.height]) |*designSlice| {
-                designSlice.* += 1;
+    var uniqueClaimId: u32 = 0;
+    var rectIterator = rectList.iterator();
+    outer: while (rectIterator.next()) |rect| {
+        var isUnique = true;
+        var otherRectIterator = rectList.iterator();
+        inner: while (otherRectIterator.next()) |otherRect| {
+            if (rect.claimId == otherRect.claimId) {
+                continue;
             }
+            if (rect.doesOverlap(otherRect)) {
+                isUnique = false;
+                break :inner;
+            }
+        }
+
+        if (isUnique) {
+            uniqueClaimId = rect.claimId;
+            break :outer;
         }
     }
 
-    var squareInches: i32 = 0;
-    for (claimMap) |*outer| {
-        for (outer) |*inner| {
-            if (inner.* > 1) {
-                squareInches += 1;
-            }
-        }
-    }
-
-    std.debug.warn("Common Square Inches: {}\n", squareInches);
+    std.debug.warn("Unique Claim ID: {}\n", uniqueClaimId);
 }
 
 const Rectangle = struct {
@@ -74,6 +84,21 @@ const Rectangle = struct {
 
         return rectangle;
     }
+
+    pub fn doesOverlap(self: Rectangle, other: Rectangle) bool {
+
+        if (self.left > other.left + other.width) {
+            return false;
+        } else if (self.top > other.top + other.height) {
+            return false;
+        } else if (other.left > self.left + self.width) {
+            return false;
+        } else if (other.top > self.top + self.height) {
+            return false;
+        }
+
+        return true;
+    }
 };
 
 test "rect parse" {
@@ -86,3 +111,7 @@ test "rect parse" {
     assert(rect.width == 11);
     assert(rect.height == 27);
 }
+
+
+
+
